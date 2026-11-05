@@ -23,6 +23,7 @@ let currentId = '';
 let selectedSongId = '';
 let activeView = 'repertoire';
 let selectedString = null;
+let lyricsCollapsed = false;
 let customTunings = readCustomTunings();
 let favoriteTuningIds = readFavoriteTunings();
 let tunerPreferences = readTunerPreferences();
@@ -201,40 +202,92 @@ function selectProject(id) {
 
 function buildProjectSelectors() { /* La tonalidad ya no se edita desde la interfaz. */ }
 
+function songLabel(song) {
+  return song.artist ? song.title + ' — ' + song.artist : song.title;
+}
+
+function setLyricsCollapsed(collapsed) {
+  lyricsCollapsed = collapsed;
+  const field = $('songLyrics');
+  field.hidden = collapsed;
+  $('toggleLyricsBtn').textContent = collapsed ? 'Desplegar letra' : 'Plegar letra';
+  $('toggleLyricsBtn').setAttribute('aria-expanded', String(!collapsed));
+}
+
+function renderSongFinder() {
+  const results = $('songFinderResults');
+  const query = $('songFinder').value.trim().toLocaleLowerCase();
+  const project = projects.find((item) => item.id === currentId);
+  results.innerHTML = '';
+  if (!query || !project) return;
+  const matches = project.repertoire.filter((song) => (song.title + ' ' + song.artist).toLocaleLowerCase().includes(query));
+  if (!matches.length) {
+    results.innerHTML = '<p class="help">No hay canciones coincidentes.</p>';
+    return;
+  }
+  for (const song of matches) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'song-finder-result';
+    button.innerHTML = '<strong>' + songLabel(song) + '</strong><small>Ver letra y datos</small>';
+    button.onclick = () => {
+      selectedSongId = song.id;
+      lyricsCollapsed = false;
+      $('projectTools').open = false;
+      $('toolsToggle').setAttribute('aria-expanded', 'false');
+      switchView('repertoire');
+      renderRepertoire();
+      requestAnimationFrame(() => $('songEditor').scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    };
+    results.appendChild(button);
+  }
+}
+
 function renderRepertoire() {
   const project = projects.find((item) => item.id === currentId);
   if (!project) return;
-  const list = $('songList');
-  list.innerHTML = '';
+  const lists = [$('songList'), $('songListBottom')];
+  lists.forEach((list) => list.innerHTML = '');
   $('newSongForm').classList.add('hidden');
   if (!project.repertoire.length) {
-    list.innerHTML = '<div class="song-empty">Añade canciones, letras o apuntes para empezar tu repertorio.</div>';
+    $('songList').innerHTML = '<div class="song-empty">Añade canciones, letras o apuntes para empezar tu repertorio.</div>';
     $('songEditor').classList.add('hidden');
+    $('songListBottom').hidden = true;
+    $('removeSongBtn').classList.add('hidden');
     selectedSongId = '';
+    renderSongFinder();
     return;
   }
+  $('songListBottom').hidden = false;
   let selected = project.repertoire.find((song) => song.id === selectedSongId);
   if (!selected) {
     selected = project.repertoire[0];
     selectedSongId = selected.id;
   }
-  const songLabel = (song) => song.artist ? song.title + ' — ' + song.artist : song.title;
+  selected.key = selected.key || '';
+  selected.bpm = Math.max(20, Math.min(300, Number(selected.bpm) || project.bpm || 120));
   for (const song of project.repertoire) {
-    const item = document.createElement('button');
-    item.type = 'button';
-    item.className = 'song-item' + (song.id === selected.id ? ' active' : '');
-    item.dataset.songId = song.id;
-    item.textContent = songLabel(song);
-    item.setAttribute('aria-pressed', String(song.id === selected.id));
-    item.onclick = () => {
-      selectedSongId = song.id;
-      renderRepertoire();
-    };
-    list.appendChild(item);
+    for (const list of lists) {
+      const item = document.createElement('button');
+      item.type = 'button';
+      item.className = 'song-item' + (song.id === selected.id ? ' active' : '');
+      item.dataset.songId = song.id;
+      item.textContent = songLabel(song);
+      item.setAttribute('aria-pressed', String(song.id === selected.id));
+      item.onclick = () => {
+        selectedSongId = song.id;
+        lyricsCollapsed = false;
+        renderRepertoire();
+      };
+      list.appendChild(item);
+    }
   }
   $('songEditor').classList.remove('hidden');
+  $('removeSongBtn').classList.remove('hidden');
   $('songTitleInput').value = selected.title;
   $('songArtistInput').value = selected.artist || '';
+  $('songKey').value = selected.key;
+  $('songBpm').value = selected.bpm;
   $('songLyrics').value = selected.lyrics || '';
   const resizeLyrics = () => {
     const field = $('songLyrics');
@@ -242,29 +295,45 @@ function renderRepertoire() {
     field.style.height = field.scrollHeight + 'px';
   };
   resizeLyrics();
+  setLyricsCollapsed(lyricsCollapsed);
   const updateSong = () => {
     selected.title = $('songTitleInput').value || 'Sin título';
-    const item = list.querySelector('[data-song-id="' + selected.id + '"]');
-    if (item) item.textContent = songLabel(selected);
+    document.querySelectorAll('[data-song-id="' + selected.id + '"]').forEach((item) => item.textContent = songLabel(selected));
     saveProject(project);
+    renderSongFinder();
   };
   $('songTitleInput').oninput = updateSong;
   $('songArtistInput').oninput = () => {
     selected.artist = $('songArtistInput').value;
     updateSong();
   };
+  $('songKey').onchange = () => {
+    selected.key = $('songKey').value;
+    saveProject(project);
+  };
+  $('songBpm').onchange = () => {
+    selected.bpm = Math.max(20, Math.min(300, Number($('songBpm').value) || 120));
+    $('songBpm').value = selected.bpm;
+    project.bpm = selected.bpm;
+    $('bpm').value = selected.bpm;
+    $('metroTempoLabel').textContent = selected.bpm + ' BPM';
+    saveProject(project);
+  };
   $('songLyrics').oninput = () => {
     resizeLyrics();
     selected.lyrics = $('songLyrics').value;
     saveProject(project);
   };
+  $('toggleLyricsBtn').onclick = () => setLyricsCollapsed(!lyricsCollapsed);
   $('removeSongBtn').onclick = () => {
-    if (!confirm('¿Quitar esta canción del repertorio?')) return;
+    if (!confirm('¿Seguro que quieres borrar «' + songLabel(selected) + '»? Esta acción no se puede deshacer.')) return;
     project.repertoire = project.repertoire.filter((song) => song.id !== selected.id);
     selectedSongId = project.repertoire[0]?.id || '';
+    lyricsCollapsed = false;
     saveProject(project);
     renderRepertoire();
   };
+  renderSongFinder();
 }
 
 function switchView(view) {
@@ -1068,6 +1137,7 @@ function bindEvents() {
   $('exportBtn').onclick = exportProject;
   $('importBtn').onclick = () => $('importFile').click();
   $('importFile').onchange = () => importProject($('importFile').files[0]);
+  $('songFinder').oninput = renderSongFinder;
 
   $('addSongBtn').onclick = () => {
     $('newSongForm').classList.toggle('hidden');
@@ -1079,7 +1149,7 @@ function bindEvents() {
     const artist = $('newSongArtist').value.trim();
     if (!title) return toast('Escribe el nombre de la canción');
     const project = projects.find((item) => item.id === currentId);
-    const song = { id: makeId(), title, artist, lyrics: '' };
+    const song = { id: makeId(), title, artist, lyrics: '', key: '', bpm: Number(project.bpm) || 120 };
     project.repertoire.push(song);
     selectedSongId = song.id;
     $('newSongTitle').value = '';
