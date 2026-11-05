@@ -27,6 +27,8 @@ export function cleanProject(raw) {
       title: String(song.title || 'Sin título'),
       artist: String(song.artist || ''),
       lyrics: String(song.lyrics || ''),
+      key: String(song.key || ''),
+      bpm: Math.max(20, Math.min(300, Number(song.bpm) || Number(project.bpm) || 120)),
     })) : [],
     created: Number(project.created) || Date.now(),
   };
