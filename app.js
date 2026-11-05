@@ -13,6 +13,7 @@ const DB_NAME = 'pulso_sampler_v1';
 const STORE_NAME = 'projects';
 const CUSTOM_TUNINGS_KEY = 'sampler.custom-tunings.v1';
 const TUNER_PREFS_KEY = 'sampler.tuner-preferences.v1';
+const FAVORITE_TUNINGS_KEY = 'frumos.favorite-tunings.v1';
 const $ = (id) => document.getElementById(id);
 const makeId = () => Math.random().toString(36).slice(2, 10);
 
@@ -23,6 +24,7 @@ let selectedSongId = '';
 let activeView = 'repertoire';
 let selectedString = null;
 let customTunings = readCustomTunings();
+let favoriteTuningIds = readFavoriteTunings();
 let tunerPreferences = readTunerPreferences();
 let activeTuningId = tunerPreferences.activeTuningId || 'chromatic';
 let tolerance = tunerPreferences.tolerance || 5;
@@ -407,16 +409,29 @@ function persistCustomTunings() {
   writeLocalStorage(CUSTOM_TUNINGS_KEY, customTunings);
 }
 
+function readFavoriteTunings() {
+  const value = readLocalStorage(FAVORITE_TUNINGS_KEY, []);
+  return Array.isArray(value) ? [...new Set(value.filter((id) => typeof id === 'string' && id !== 'chromatic'))] : [];
+}
+
+function persistFavoriteTunings() {
+  writeLocalStorage(FAVORITE_TUNINGS_KEY, favoriteTuningIds);
+}
+
 function customTuningValue(id) {
   return 'custom:' + id;
 }
 
-function getActiveTuning() {
-  if (activeTuningId === 'chromatic') return null;
-  const preset = TUNINGS.find((tuning) => tuning.id === activeTuningId);
+function getTuningById(id) {
+  if (id === 'chromatic') return null;
+  const preset = TUNINGS.find((tuning) => tuning.id === id);
   if (preset) return preset;
-  const id = activeTuningId.startsWith('custom:') ? activeTuningId.slice(7) : activeTuningId;
-  return customTunings.find((tuning) => tuning.id === id) || null;
+  const customId = id.startsWith('custom:') ? id.slice(7) : id;
+  return customTunings.find((tuning) => tuning.id === customId) || null;
+}
+
+function getActiveTuning() {
+  return getTuningById(activeTuningId);
 }
 
 function syncTuningSelector() {
@@ -452,6 +467,36 @@ function syncTuningSelector() {
   select.appendChild(create);
   if (activeTuningId.startsWith('custom:') && !customTunings.some((item) => customTuningValue(item.id) === activeTuningId)) activeTuningId = 'chromatic';
   select.value = activeTuningId;
+}
+
+function renderFavorites() {
+  const list = $('favoriteTuningList');
+  const empty = $('favoriteTuningEmpty');
+  const entries = favoriteTuningIds.map((id) => ({ id, tuning: getTuningById(id) })).filter((item) => item.tuning);
+  if (entries.length !== favoriteTuningIds.length) {
+    favoriteTuningIds = entries.map((item) => item.id);
+    persistFavoriteTunings();
+  }
+  list.innerHTML = '';
+  empty.hidden = entries.length > 0;
+  for (const { id, tuning } of entries) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'favorite-item' + (id === activeTuningId ? ' active' : '');
+    button.innerHTML = '<span>★ ' + tuning.name + '</span><small>' + tuning.strings.join(' · ') + '</small>';
+    button.onclick = () => changeTuning(id);
+    list.appendChild(button);
+  }
+}
+
+function toggleFavoriteTuning() {
+  const tuning = getActiveTuning();
+  if (!tuning) return;
+  const index = favoriteTuningIds.indexOf(activeTuningId);
+  if (index >= 0) favoriteTuningIds.splice(index, 1);
+  else favoriteTuningIds.push(activeTuningId);
+  persistFavoriteTunings();
+  renderTuner();
 }
 
 function stringMidi(note) {
@@ -515,6 +560,14 @@ function highlightCurrentString(matchedIndex) {
 
 function renderTuner() {
   syncTuningSelector();
+  const favoriteButton = $('favoriteTuningBtn');
+  const favorite = Boolean(getActiveTuning()) && favoriteTuningIds.includes(activeTuningId);
+  favoriteButton.disabled = !getActiveTuning();
+  favoriteButton.textContent = favorite ? '★' : '☆';
+  favoriteButton.setAttribute('aria-pressed', String(favorite));
+  favoriteButton.setAttribute('aria-label', favorite ? 'Quitar afinación de favoritas' : 'Marcar afinación como favorita');
+  favoriteButton.title = favorite ? 'Quitar de favoritas' : 'Marcar como favorita';
+  renderFavorites();
   const strings = targetStrings();
   const target = currentTarget();
   renderStrings(target?.index ?? null);
@@ -620,6 +673,8 @@ function deleteCustomTuning() {
   if (!tuning || !activeTuningId.startsWith('custom:')) return;
   if (!confirm('¿Eliminar la afinación «' + tuning.name + '»?')) return;
   customTunings = customTunings.filter((item) => item.id !== tuning.id);
+  favoriteTuningIds = favoriteTuningIds.filter((id) => id !== activeTuningId);
+  persistFavoriteTunings();
   activeTuningId = 'standard-e';
   selectedString = null;
   persistCustomTunings();
@@ -1080,6 +1135,7 @@ function bindEvents() {
   $('analyzeReference').onclick = analyzeReference;
 
   $('tuningSelect').onchange = () => changeTuning($('tuningSelect').value);
+  $('favoriteTuningBtn').onclick = toggleFavoriteTuning;
   $('toleranceSelect').value = String(tolerance);
   $('toleranceSelect').onchange = () => {
     tolerance = Number($('toleranceSelect').value) || 5;
