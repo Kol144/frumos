@@ -17,7 +17,35 @@
     @media(max-width:560px){.shell{padding:13px}.top{align-items:flex-start}.brand{font-size:17px}.top-actions{gap:6px;flex-wrap:wrap;justify-content:flex-end}.project-select{max-width:145px;padding:8px 22px 8px 7px}.top-actions .btn{padding:8px}.main-nav{gap:4px;padding:14px 0 11px}.nav-tab{padding:9px 10px;font-size:11px;flex:1}.view{padding-top:18px}.title-row h1{font-size:23px}.panel-grid,.tool-grid{grid-template-columns:1fr}.repertoire-layout{grid-template-columns:1fr}.song-list{max-height:200px}.bpm-control input{font-size:64px;width:145px}.tuner-toolbar{grid-template-columns:1fr}.tuner-readout{grid-template-columns:1fr;gap:0}.note-readout{border:0;border-bottom:1px solid var(--line);padding:12px 14px}.detected-note{font-size:68px}.meter-column{padding:13px}.string-row{gap:5px}.string-chip{padding:9px 3px}.string-chip strong{font-size:12px}.custom-fields{grid-template-columns:1fr}.custom-string{grid-template-columns:52px minmax(0,1fr) 76px}.title-row .actions{width:100%}.top .brand-sub{display:none}}
     @media(max-width:360px){.brand{gap:7px;font-size:15px}.logo{width:30px;height:30px}.project-select{max-width:112px}.string-chip strong{font-size:10px}.string-chip .string-number,.string-chip small{font-size:8px}}
     .card{background:var(--user-panel);border-color:var(--user-border)}.project-tools{border-color:var(--user-border)}.project-tools[open]>summary{border-color:var(--user-border)}.field input,.field select,.field textarea,.form-row input,.form-row select,.song-form input,.lyrics-editor input,.lyrics-editor textarea,.bpm-control input,.meter,.string-chip,.custom-string{border-color:var(--user-border)}.string-chip.nearest{border-color:#758841}.smallbtn.active{border-color:var(--lime);color:var(--lime)}
-  </style>
+  
+/* Ajustes de enfoque para Frumos */
+.main-nav{justify-content:center}
+#repertoireView>.card,#metronomeView .metro-main>.card{background:#090909;border-color:#303030}
+.metro-layout{grid-template-columns:minmax(0,760px);justify-content:center}
+.metro-main{text-align:center}
+.metro-main>.card{display:grid;justify-items:center}
+.metro-main .bpm-control,.metro-main .bpm-foot{justify-content:center}
+.metro-main .metro-actions .btn.primary{min-height:66px;font-size:14px}
+.metro-main .status{text-align:center}
+.tuner-toolbar{grid-template-columns:1fr;justify-items:center}
+.tuner-settings{justify-content:center}
+.tuning-picker{display:flex;align-items:end;gap:9px}
+.tuning-picker .field{min-width:min(360px,calc(100vw - 118px))}
+.tuning-picker select{min-height:48px;font-size:15px;font-weight:700}
+.favorite-toggle{width:48px;min-height:48px;padding:0;border:1px solid #4c4c4c;border-radius:8px;background:#171717;color:#aaa;font-size:24px;line-height:1}
+.favorite-toggle:hover,.favorite-toggle[aria-pressed="true"]{border-color:var(--lime);color:var(--lime);background:#222817}
+.favorites-panel{width:min(100%,560px);margin:0 auto 14px;background:#090909;border:1px solid #303030;border-radius:11px}
+.favorites-panel>summary{cursor:pointer;list-style:none;padding:13px 15px;color:var(--text);font-size:13px;font-weight:800;text-align:center}
+.favorites-panel>summary::-webkit-details-marker{display:none}
+.favorites-panel>summary::before{content:"★";color:var(--lime);margin-right:8px}
+.favorite-list{display:grid;gap:7px;padding:0 12px 12px}
+.favorite-item{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid #353535;border-radius:8px;background:#161616;padding:10px 12px;color:var(--text);text-align:left;font-weight:700}
+.favorite-item:hover,.favorite-item.active{border-color:var(--lime);background:#222817}
+.favorite-item small{color:var(--muted);font-weight:500}
+.favorite-empty{margin:0;padding:0 12px 14px;color:var(--muted);font-size:12px;text-align:center}
+@media(max-width:560px){.tuning-picker{width:100%}.tuning-picker .field{flex:1;min-width:0}.metro-main .metro-actions .btn.primary{min-height:62px}}
+
+</style>
 </head>
 <body>
   <div class="shell">
@@ -77,13 +105,13 @@
             <section class="card"><div class="card-label">Tempo</div><div class="bpm-control"><input id="bpm" type="number" min="20" max="300" step="1" value="120" aria-label="Tempo en pulsos por minuto"><span>BPM</span></div><div class="bpm-foot"><button id="minus" class="smallbtn" type="button" aria-label="Bajar un BPM">−</button><button id="plus" class="smallbtn" type="button" aria-label="Subir un BPM">＋</button><button id="tap" class="smallbtn" type="button">TAP TEMPO</button><span id="metroTempoLabel" class="dim">120 BPM</span></div></section>
             <div class="metro-actions"><button id="metroBtn" class="btn primary" type="button" aria-pressed="false">▶ Iniciar metrónomo</button><button id="tapBig" class="tapbtn" type="button">Toca aquí al ritmo del tema</button><div id="tapStatus" class="status" aria-live="polite">Pulsa varias veces para calcular el BPM</div></div>
           </div>
-          <section class="card metro-info"><div class="info-icon" aria-hidden="true">♩</div><div><div class="card-label">Tap Tempo</div><small>Pulsa al ritmo de la canción. El tempo se calcula con los intervalos recientes y queda guardado en el proyecto.</small></div></section>
+          
         </div>
       </section>
 
       <section id="tunerView" class="view" role="tabpanel" aria-labelledby="navTuner" hidden>
         <div class="title-row"><div><div class="eyebrow">ESTUDIO PERSONAL / AFINACIÓN</div><h1>Afinador de guitarra</h1><div class="project-caption">Detección cromática en tiempo real desde el micrófono</div></div></div>
-        <div class="tuner-toolbar"><div class="tuner-settings"><label class="field" for="tuningSelect">Afinación<select id="tuningSelect"></select></label><label class="field tolerance" for="toleranceSelect">Tolerancia<select id="toleranceSelect"><option value="3">±3 cents</option><option value="5" selected>±5 cents</option><option value="10">±10 cents</option><option value="15">±15 cents</option></select></label></div><div id="customManage" class="actions hidden"><button id="editCustomBtn" class="btn" type="button">Editar</button><button id="duplicateCustomBtn" class="btn" type="button">Duplicar</button><button id="deleteCustomBtn" class="btn" type="button">Eliminar</button></div></div>
+        <div class="tuner-toolbar"><div class="tuner-settings"><div class="tuning-picker"><button id="favoriteTuningBtn" class="favorite-toggle" type="button" aria-label="Marcar afinación como favorita" aria-pressed="false" title="Marcar como favorita">☆</button><label class="field" for="tuningSelect">Afinación<select id="tuningSelect"></select></label></div><label class="field tolerance" for="toleranceSelect">Tolerancia<select id="toleranceSelect"><option value="3">±3 cents</option><option value="5" selected>±5 cents</option><option value="10">±10 cents</option><option value="15">±15 cents</option></select></label></div><div id="customManage" class="actions hidden"><button id="editCustomBtn" class="btn" type="button">Editar</button><button id="duplicateCustomBtn" class="btn" type="button">Duplicar</button><button id="deleteCustomBtn" class="btn" type="button">Eliminar</button></div></div><details class="favorites-panel" open><summary>Favoritas</summary><div id="favoriteTuningList" class="favorite-list"></div><p id="favoriteTuningEmpty" class="favorite-empty">Aún no hay afinaciones favoritas.</p></details>
         <section class="card tuner-display" aria-live="polite">
           <div class="tuner-readout"><div class="note-readout"><div class="card-label">Nota detectada</div><div id="detectedNote" class="detected-note">—</div><div id="detectedFrequency" class="detected-frequency">— Hz</div><div id="tuningState" class="tuning-status">Activa el micrófono para empezar</div></div><div class="meter-column"><div class="target-readout"><strong id="targetNote">Sin objetivo fijo</strong><span id="targetString">Modo cromático</span></div><div class="cents-line"><span>Desviación</span><span id="centsValue" class="cents-value">— cents</span></div><div id="meter" class="meter" role="img" aria-label="Indicador de afinación"><span id="meterNeedle" class="meter-needle"></span></div><div class="meter-labels"><span>♭ Grave</span><span>Afinada</span><span>Aguda ♯</span></div></div></div>
         </section>
