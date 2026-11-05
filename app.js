@@ -115,10 +115,7 @@ function save() {
   project.bpm = Math.max(20, Math.min(300, Number($('bpm').value) || 120));
   $('bpm').value = project.bpm;
   $('metroTempoLabel').textContent = project.bpm + ' BPM';
-  project.key = $('key').value;
-  project.mode = $('mode').value;
-  project.note = $('keyNote').value;
-  project.theme = { bg: $('bgColor').value, panel: $('panelColor').value, border: $('borderColor').value };
+  project.theme = { bg: '#000000', panel: '#000000', border: '#000000' };
   applyTheme(project);
   saveProject(project);
 }
@@ -194,26 +191,15 @@ function selectProject(id) {
   $('projectCaption').textContent = project.name;
   $('bpm').value = project.bpm;
   $('metroTempoLabel').textContent = project.bpm + ' BPM';
-  $('key').value = project.key || '';
-  $('mode').value = project.mode || 'Mayor';
-  $('keyNote').value = project.note || '';
-  $('bgColor').value = project.theme.bg;
-  $('panelColor').value = project.theme.panel;
-  $('borderColor').value = project.theme.border;
+  $('bgColor').value = '#000000';
+  $('panelColor').value = '#000000';
+  $('borderColor').value = '#000000';
   applyTheme(project);
   renderProjects();
   renderRepertoire();
 }
 
-function buildProjectSelectors() {
-  const options = ['C', 'C♯ / D♭', 'D', 'D♯ / E♭', 'E', 'F', 'F♯ / G♭', 'G', 'G♯ / A♭', 'A', 'A♯ / B♭', 'B'];
-  for (const key of options) {
-    const option = document.createElement('option');
-    option.value = key;
-    option.textContent = key;
-    $('key').appendChild(option);
-  }
-}
+function buildProjectSelectors() { /* La tonalidad ya no se edita desde la interfaz. */ }
 
 function renderRepertoire() {
   const project = projects.find((item) => item.id === currentId);
@@ -250,6 +236,12 @@ function renderRepertoire() {
   $('songTitleInput').value = selected.title;
   $('songArtistInput').value = selected.artist || '';
   $('songLyrics').value = selected.lyrics || '';
+  const resizeLyrics = () => {
+    const field = $('songLyrics');
+    field.style.height = 'auto';
+    field.style.height = field.scrollHeight + 'px';
+  };
+  resizeLyrics();
   const updateSong = () => {
     selected.title = $('songTitleInput').value || 'Sin título';
     const item = list.querySelector('[data-song-id="' + selected.id + '"]');
@@ -262,6 +254,7 @@ function renderRepertoire() {
     updateSong();
   };
   $('songLyrics').oninput = () => {
+    resizeLyrics();
     selected.lyrics = $('songLyrics').value;
     saveProject(project);
   };
@@ -1108,11 +1101,9 @@ function bindEvents() {
     $('bpm').value = Math.min(300, (Number($('bpm').value) || 120) + 1);
     updateMetronomeTempo();
   };
-  $('tap').onclick = tapTempo;
   $('tapBig').onclick = tapTempo;
   $('metroBtn').onclick = () => metroTimer ? stopMetronome() : startMetronome();
 
-  ['key', 'mode', 'keyNote'].forEach((id) => $(id).addEventListener('input', save));
   ['bgColor', 'panelColor', 'borderColor'].forEach((id) => $(id).addEventListener('input', save));
   $('sourceMode').onchange = configureSourceSearch;
   $('sourceGo').onclick = () => {
