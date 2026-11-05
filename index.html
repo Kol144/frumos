@@ -45,6 +45,33 @@
 .favorite-empty{margin:0;padding:0 12px 14px;color:var(--muted);font-size:12px;text-align:center}
 @media(max-width:560px){.tuning-picker{width:100%}.tuning-picker .field{flex:1;min-width:0}.metro-main .metro-actions .btn.primary{min-height:62px}}
 
+
+/* Diseño compacto orientado a móvil */
+.repertoire-layout{grid-template-columns:1fr;width:100%}
+.song-list{width:100%;max-height:none;overflow:visible}
+.song-item{width:100%;text-align:center;font-size:14px;padding:13px}
+.lyrics-editor{width:100%;max-width:none}
+.song-editor-head{justify-content:center;position:relative;padding-right:106px;min-height:34px}
+.song-editor-head>label{width:100%;text-align:center}
+.song-editor-head .smallbtn{position:absolute;right:0;top:0}
+.lyrics-editor textarea{min-height:0;height:auto;overflow:hidden;resize:none;font-size:16px;line-height:1.62}
+#metronomeView .bpm-foot{justify-content:center}
+.tuner-display{background:#090909;border-color:#303030}
+.mic-controls{display:grid;grid-template-columns:1fr 1fr;width:100%;gap:8px}
+.mic-controls #micButton{grid-column:1/-1;width:100%;min-height:54px;font-size:14px}
+.mic-controls .mic-message{grid-column:1/-1;margin:0;text-align:center}
+.project-tools .tool-grid>.card{background:#090909;border-color:#303030}
+.project-tools input[type="color"]{background:#000}
+@media(max-width:560px){
+  .shell{padding:15px 16px 34px}
+  .repertoire-head{align-items:center}
+  .song-editor-head{padding-right:106px}
+  .tuner-readout{grid-template-columns:1fr}
+  .note-readout{border-right:0;border-bottom:1px solid var(--line)}
+  .meter-column{padding-top:3px}
+  .tuner-display{padding:13px}
+}
+
 </style>
 </head>
 <body>
@@ -71,12 +98,8 @@
         </section>
         <div class="tool-grid">
           <section class="card">
-            <div class="card-label">Tonalidad y notas del proyecto</div>
-            <div class="form-row"><label for="key">Tonalidad<select id="key"><option value="">—</option></select></label><label for="mode">Modo<select id="mode"><option>Mayor</option><option>Menor</option></select></label><label for="keyNote">Nota / comentario<input id="keyNote" maxlength="120" placeholder="Referencia musical"></label></div>
-          </section>
-          <section class="card">
             <div class="card-label">Apariencia del proyecto</div>
-            <div class="form-row"><label for="bgColor">Fondo<input id="bgColor" type="color" value="#101010"></label><label for="panelColor">Paneles<input id="panelColor" type="color" value="#1e1e1e"></label><label for="borderColor">Bordes<input id="borderColor" type="color" value="#333333"></label></div>
+            <div class="form-row"><label for="bgColor">Fondo<input id="bgColor" type="color" value="#000000"></label><label for="panelColor">Paneles<input id="panelColor" type="color" value="#000000"></label><label for="borderColor">Bordes<input id="borderColor" type="color" value="#000000"></label></div>
           </section>
           <section class="card">
             <div class="card-label">Referencia de audio · BPM</div>
@@ -102,7 +125,7 @@
         <div class="title-row"><div><div class="eyebrow">ESTUDIO PERSONAL / PULSO</div><h1>Metrónomo</h1><div class="project-caption">Tempo asociado al proyecto activo</div></div></div>
         <div class="metro-layout">
           <div class="metro-main">
-            <section class="card"><div class="card-label">Tempo</div><div class="bpm-control"><input id="bpm" type="number" min="20" max="300" step="1" value="120" aria-label="Tempo en pulsos por minuto"><span>BPM</span></div><div class="bpm-foot"><button id="minus" class="smallbtn" type="button" aria-label="Bajar un BPM">−</button><button id="plus" class="smallbtn" type="button" aria-label="Subir un BPM">＋</button><button id="tap" class="smallbtn" type="button">TAP TEMPO</button><span id="metroTempoLabel" class="dim">120 BPM</span></div></section>
+            <section class="card"><div class="card-label">Tempo</div><div class="bpm-control"><input id="bpm" type="number" min="20" max="300" step="1" value="120" aria-label="Tempo en pulsos por minuto"><span>BPM</span></div><div class="bpm-foot"><button id="minus" class="smallbtn" type="button" aria-label="Bajar un BPM">−</button><button id="plus" class="smallbtn" type="button" aria-label="Subir un BPM">＋</button><span id="metroTempoLabel" class="dim">120 BPM</span></div></section>
             <div class="metro-actions"><button id="metroBtn" class="btn primary" type="button" aria-pressed="false">▶ Iniciar metrónomo</button><button id="tapBig" class="tapbtn" type="button">Toca aquí al ritmo del tema</button><div id="tapStatus" class="status" aria-live="polite">Pulsa varias veces para calcular el BPM</div></div>
           </div>
           
@@ -117,7 +140,7 @@
         </section>
         <div id="stringList" class="string-row" aria-label="Cuerdas de la afinación"></div>
         <div class="string-tools"><div class="tuner-controls"><button id="autoStringBtn" class="smallbtn active" type="button" aria-pressed="true">AUTO · cuerda más cercana</button><button id="referenceToneBtn" class="smallbtn" type="button">♪ Nota de referencia</button></div><span id="confidenceLabel" class="dim">Lectura en espera</span></div>
-        <div class="tuner-controls" style="margin-top:13px"><button id="micButton" class="btn primary" type="button">Activar micrófono</button><button id="tunerStopButton" class="btn" type="button" disabled>Detener escucha</button><span id="micMessage" class="mic-message" role="status" aria-live="polite">El micrófono solo se utiliza después de que lo actives.</span></div>
+        <div class="tuner-controls mic-controls" style="margin-top:13px"><button id="micButton" class="btn primary" type="button">Activar micrófono</button><button id="tunerStopButton" class="btn" type="button" disabled>Detener escucha</button><span id="micMessage" class="mic-message" role="status" aria-live="polite">El micrófono solo se utiliza después de que lo actives.</span></div>
         <p class="privacy-note">El audio se analiza localmente en este navegador: no se graba, guarda ni envía a ningún servidor.</p>
         <section id="customEditor" class="card custom-panel hidden" aria-labelledby="customEditorTitle"><div class="custom-header"><div><div class="card-label">Afinación personal</div><strong id="customEditorTitle">Crea las seis notas de tu guitarra</strong></div></div><label class="field" for="customTuningName" style="margin-top:12px">Nombre de la afinación<input id="customTuningName" maxlength="40" placeholder="Por ejemplo, Mi afinación"></label><input id="customTuningId" type="hidden"><div id="customStrings" class="custom-fields"></div><div class="custom-actions"><span class="help">Las cuerdas se muestran de la sexta a la primera. Puedes elegir notas enarmónicas y octavas de 0 a 8.</span><div class="actions"><button id="cancelCustomBtn" class="btn" type="button">Cancelar</button><button id="saveCustomBtn" class="btn primary" type="button">Guardar afinación</button></div></div></section>
       </section>
