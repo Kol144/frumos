@@ -1,0 +1,11 @@
+{
+  "name": "Frumos — Estudio musical",
+  "short_name": "Frumos",
+  "description": "Estudio musical personal con repertorio, metrónomo y afinador de guitarra",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#101010",
+  "theme_color": "#101010",
+  "icons": [{ "src": "icons/frumos.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
+
