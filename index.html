@@ -72,6 +72,36 @@
   .tuner-display{padding:13px}
 }
 
+
+/* Repertorio: accesos rápidos y edición por canción */
+.repertoire-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.btn.danger{background:#2a1a1a;border-color:#70403a;color:#ffd9d2}
+.btn.danger:hover{border-color:var(--orange);background:#3a201d}
+.song-item{font-size:16px;padding:16px 18px;text-align:center}
+.song-meta{display:grid;grid-template-columns:1fr 120px;gap:8px}
+.song-meta label{display:grid;gap:6px;color:var(--muted);font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+.song-meta input,.song-meta select{width:100%;background:#111;border:1px solid #383838;border-radius:7px;padding:10px;color:var(--text)}
+.lyrics-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.lyrics-head label{margin:0}
+.lyrics-head .smallbtn{padding:8px 11px}
+.song-separator{display:flex;align-items:center;gap:10px;margin:18px 0 12px;color:var(--muted);font:10px 'DM Mono',monospace;letter-spacing:.12em;text-transform:uppercase}
+.song-separator:before,.song-separator:after{content:"";height:1px;background:#333;flex:1}
+.song-list-bottom{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));max-height:none;overflow:visible}
+.song-finder-card{display:grid;gap:8px}
+.song-finder-card input{width:100%;background:#111;border:1px solid #393939;border-radius:7px;padding:11px;color:var(--text)}
+.song-finder-results{display:grid;gap:6px}
+.song-finder-result{width:100%;padding:10px 12px;border:1px solid #353535;border-radius:8px;background:#151515;color:var(--text);text-align:left}
+.song-finder-result:hover{border-color:var(--lime);background:#222817}
+.song-finder-result small{color:var(--muted);margin-left:7px}
+@media(max-width:560px){
+  .repertoire-head{align-items:flex-start}
+  .repertoire-actions{justify-content:flex-end}
+  .song-item{font-size:16px;padding:17px 14px}
+  .song-meta{grid-template-columns:1fr}
+  .song-list-bottom{grid-template-columns:1fr}
+  .lyrics-head{align-items:center}
+}
+
 </style>
 </head>
 <body>
@@ -90,6 +120,7 @@
     <details id="projectTools" class="project-tools">
       <summary>Proyectos guardados, archivos, referencias y preferencias</summary>
       <div class="tools-content">
+        <section class="card song-finder-card" aria-labelledby="songFinderTitle"><div id="songFinderTitle" class="card-label">Buscar canción del repertorio</div><input id="songFinder" type="search" autocomplete="off" placeholder="Escribe título o artista…" aria-label="Buscar canción del repertorio"><div id="songFinderResults" class="song-finder-results" aria-live="polite"></div></section>
         <section class="card">
           <div class="repertoire-head"><strong>Proyectos</strong><div class="actions"><button id="saveProjectBtn" class="btn primary" type="button">✓ Guardar proyecto</button><button id="renameProjectBtn" class="btn" type="button">Renombrar</button></div></div>
           <div id="projectList" class="project-list"></div>
@@ -115,9 +146,9 @@
       <section id="repertoireView" class="view" role="tabpanel" aria-labelledby="navRepertoire">
         <div class="title-row"><div><div class="eyebrow">ESTUDIO PERSONAL / CANCIONES</div><h1>Repertorio</h1><div id="projectCaption" class="project-caption"></div></div></div>
         <div class="card">
-          <div class="repertoire-head"><strong>Mis canciones</strong><button id="addSongBtn" class="btn primary" type="button" aria-label="Añadir canción">＋ Añadir canción</button></div>
+          <div class="repertoire-head"><strong>Mis canciones</strong><div class="repertoire-actions"><button id="addSongBtn" class="btn primary" type="button" aria-label="Añadir canción">＋ Añadir canción</button><button id="removeSongBtn" class="btn danger hidden" type="button">Quitar canción</button></div></div>
           <div id="newSongForm" class="song-form hidden"><input id="newSongTitle" maxlength="100" placeholder="Nombre de la canción" aria-label="Nombre de la canción"><input id="newSongArtist" maxlength="100" placeholder="Artista (opcional)" aria-label="Artista"><div class="actions"><button id="confirmSongBtn" class="btn primary" type="button">Añadir</button><button id="cancelSongBtn" class="btn" type="button">Cancelar</button></div></div>
-          <div class="repertoire-layout"><div id="songList" class="song-list"></div><section id="songEditor" class="lyrics-editor hidden" aria-label="Editar canción"><div class="song-editor-head"><label for="songTitleInput">Canción</label><button id="removeSongBtn" class="smallbtn" type="button">Quitar canción</button></div><input id="songTitleInput" maxlength="100" placeholder="Nombre de la canción"><input id="songArtistInput" maxlength="100" placeholder="Nombre del artista"><label for="songLyrics">Letra / apuntes</label><textarea id="songLyrics" placeholder="Escribe o pega aquí la letra, acordes o apuntes…"></textarea></section></div>
+          <div class="repertoire-layout"><div id="songList" class="song-list"></div><section id="songEditor" class="lyrics-editor hidden" aria-label="Editar canción"><input id="songTitleInput" maxlength="100" placeholder="Nombre de la canción" aria-label="Nombre de la canción"><input id="songArtistInput" maxlength="100" placeholder="Nombre del artista" aria-label="Nombre del artista"><div class="song-meta"><label for="songKey">Tonalidad<select id="songKey"><option value="">—</option><option>C</option><option>C♯ / D♭</option><option>D</option><option>D♯ / E♭</option><option>E</option><option>F</option><option>F♯ / G♭</option><option>G</option><option>G♯ / A♭</option><option>A</option><option>A♯ / B♭</option><option>B</option></select></label><label for="songBpm">BPM<input id="songBpm" type="number" min="20" max="300" step="1" inputmode="numeric"></label></div><div class="lyrics-head"><label for="songLyrics">Letra / apuntes</label><button id="toggleLyricsBtn" class="smallbtn" type="button" aria-expanded="true">Plegar letra</button></div><textarea id="songLyrics" placeholder="Escribe o pega aquí la letra, acordes o apuntes…"></textarea></section></div><div class="song-separator" aria-hidden="true"><span>Canciones</span></div><div id="songListBottom" class="song-list song-list-bottom"></div>
         </div>
       </section>
 
