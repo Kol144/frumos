@@ -1,4 +1,4 @@
-name: Deploy Sampler to GitHub Pages
+name: Deploy Frumos to GitHub Pages
 on:
   push:
     branches: [main]
