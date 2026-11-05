@@ -70,7 +70,14 @@ test('la migración de proyectos conserva canciones, BPM y tema y elimina los ca
   assert.equal(migrated.mode, 'Menor');
   assert.equal(migrated.note, 'Afinación de concierto');
   assert.deepEqual(migrated.theme, { bg: '#121212', panel: '#242424', border: '#393939' });
-  assert.deepEqual(migrated.repertoire, [{ id: 'cancion-1', title: 'Tema', artist: 'Grupo', lyrics: 'Acordes guardados' }]);
+  assert.deepEqual(migrated.repertoire, [{
+    id: 'cancion-1',
+    title: 'Tema',
+    artist: 'Grupo',
+    lyrics: 'Acordes guardados',
+    key: '',
+    bpm: 137,
+  }]);
   assert.equal(migrated.created, 12345);
   assert.equal('pads' in migrated, false);
   assert.equal('rows' in migrated, false);
