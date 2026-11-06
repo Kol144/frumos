@@ -124,19 +124,12 @@
         <section class="card">
           <div class="repertoire-head"><strong>Proyectos</strong><div class="actions"><button id="saveProjectBtn" class="btn primary" type="button">✓ Guardar proyecto</button><button id="renameProjectBtn" class="btn" type="button">Renombrar</button></div></div>
           <div id="projectList" class="project-list"></div>
-          <div class="actions" style="margin-top:12px"><button id="exportBtn" class="btn" type="button">↓ Exportar proyecto</button><button id="importBtn" class="btn" type="button">↑ Importar proyecto</button><input id="importFile" type="file" accept=".pulso,application/json" hidden></div>
-          <p class="help">Los proyectos guardan repertorio, tempo, tonalidad y apariencia en este dispositivo. Los archivos .pulso exportan esos datos para una copia o traslado.</p>
+          <p class="help">Los proyectos guardan repertorio, tempo y apariencia en este dispositivo.</p>
         </section>
         <div class="tool-grid">
           <section class="card">
             <div class="card-label">Apariencia del proyecto</div>
-            <div class="form-row"><label for="bgColor">Fondo<input id="bgColor" type="color" value="#000000"></label><label for="panelColor">Paneles<input id="panelColor" type="color" value="#000000"></label><label for="borderColor">Bordes<input id="borderColor" type="color" value="#000000"></label></div>
-          </section>
-          <section class="card">
-            <div class="card-label">Referencia de audio · BPM</div>
-            <div class="form-row"><select id="sourceMode" aria-label="Tipo de referencia"><option value="search">Buscar canción</option><option value="link">Enlace</option></select><input id="sourceInput" placeholder="Artista o título" aria-label="Canción o enlace"><button id="sourceGo" class="btn" type="button">Abrir ↗</button></div>
-            <div class="form-row" style="margin-top:9px"><input id="referenceFile" type="file" accept="audio/*,.mp3,.wav,.flac,.m4a,.ogg,.aiff,.aac" aria-label="Archivo de referencia"><button id="analyzeReference" class="btn" type="button">Analizar BPM</button></div>
-            <p id="sourceHelp" class="help">El análisis se hace localmente en el navegador. La tonalidad se introduce manualmente.</p><div id="trackInfo" class="help" aria-live="polite"></div>
+            <div class="form-row"><label for="bgColor">Fondo<input id="bgColor" type="color" value="#000000"></label></div>
           </section>
         </div>
       </div>

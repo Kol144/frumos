@@ -193,8 +193,6 @@ function selectProject(id) {
   $('bpm').value = project.bpm;
   $('metroTempoLabel').textContent = project.bpm + ' BPM';
   $('bgColor').value = '#000000';
-  $('panelColor').value = '#000000';
-  $('borderColor').value = '#000000';
   applyTheme(project);
   renderProjects();
   renderRepertoire();
@@ -843,8 +841,8 @@ function processTunerFrame() {
   if (now - lastAnalysisAt < 85) return;
   lastAnalysisAt = now;
   tunerAnalyser.getFloatTimeDomainData(tunerRawSamples);
-  for (let i = 0; i < tunerSamples.length; i++) tunerSamples[i] = (tunerRawSamples[i * 2] + tunerRawSamples[i * 2 + 1]) / 2;
-  const sampleRate = tunerContext.sampleRate / 2;
+  tunerSamples.set(tunerRawSamples);
+  const sampleRate = tunerContext.sampleRate;
   const range = getAnalysisRange(sampleRate);
   const reading = detectPitchYin(tunerSamples, sampleRate, { ...range, threshold: 0.14, minClarity: 0.78, minRms: 0.0025 });
   stabilizePitch(reading);
@@ -1134,9 +1132,6 @@ function bindEvents() {
       renderProjects();
     });
   };
-  $('exportBtn').onclick = exportProject;
-  $('importBtn').onclick = () => $('importFile').click();
-  $('importFile').onchange = () => importProject($('importFile').files[0]);
   $('songFinder').oninput = renderSongFinder;
 
   $('addSongBtn').onclick = () => {
@@ -1174,26 +1169,7 @@ function bindEvents() {
   $('tapBig').onclick = tapTempo;
   $('metroBtn').onclick = () => metroTimer ? stopMetronome() : startMetronome();
 
-  ['bgColor', 'panelColor', 'borderColor'].forEach((id) => $(id).addEventListener('input', save));
-  $('sourceMode').onchange = configureSourceSearch;
-  $('sourceGo').onclick = () => {
-    const query = $('sourceInput').value.trim();
-    if (!query) return toast('Escribe un artista, título o enlace');
-    if ($('sourceMode').value === 'search') {
-      window.open('https://www.google.com/search?q=' + encodeURIComponent(query + ' song bpm key'), '_blank', 'noopener');
-      $('trackInfo').textContent = query;
-      return;
-    }
-    try {
-      const url = new URL(query);
-      window.open(url.href, '_blank', 'noopener');
-      $('trackInfo').textContent = query.slice(0, 80);
-    } catch {
-      toast('El enlace no es válido');
-    }
-  };
-  $('sourceInput').onkeydown = (event) => { if (event.key === 'Enter') $('sourceGo').click(); };
-  $('analyzeReference').onclick = analyzeReference;
+  $('bgColor').addEventListener('input', save);
 
   $('tuningSelect').onchange = () => changeTuning($('tuningSelect').value);
   $('favoriteTuningBtn').onclick = toggleFavoriteTuning;
