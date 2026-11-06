@@ -116,7 +116,7 @@ function save() {
   project.bpm = Math.max(20, Math.min(300, Number($('bpm').value) || 120));
   $('bpm').value = project.bpm;
   $('metroTempoLabel').textContent = project.bpm + ' BPM';
-  project.theme = { bg: '#000000', panel: '#000000', border: '#000000' };
+  project.theme = { ...(project.theme || {}), bg: $('bgColor').value };
   applyTheme(project);
   saveProject(project);
 }
@@ -281,6 +281,22 @@ function renderRepertoire() {
     }
   }
   $('songEditor').classList.remove('hidden');
+  let foldButton = $('toggleSongBtn');
+  if (!foldButton) {
+    foldButton = document.createElement('button');
+    foldButton.id = 'toggleSongBtn';
+    foldButton.className = 'song-fold';
+    foldButton.type = 'button';
+    $('songEditor').prepend(foldButton);
+    foldButton.onclick = () => {
+      const folded = $('songEditor').classList.toggle('song-editor-folded');
+      foldButton.textContent = folded ? 'Desplegar canción' : 'Plegar canción';
+      foldButton.setAttribute('aria-expanded', String(!folded));
+    };
+  }
+  $('songEditor').classList.remove('song-editor-folded');
+  foldButton.textContent = 'Plegar canción';
+  foldButton.setAttribute('aria-expanded', 'true');
   $('removeSongBtn').classList.remove('hidden');
   $('songTitleInput').value = selected.title;
   $('songArtistInput').value = selected.artist || '';
