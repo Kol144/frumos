@@ -850,7 +850,7 @@ function processTunerFrame() {
   tunerSamples.set(tunerRawSamples);
   const sampleRate = tunerContext.sampleRate;
   const range = getAnalysisRange(sampleRate);
-  const reading = detectPitchYin(tunerSamples, sampleRate, { ...range, threshold: 0.14, minClarity: 0.78, minRms: 0.0025 });
+  const reading = detectPitchYin(tunerSamples, sampleRate, { ...range, analysisSize: 4096, threshold: 0.14, minClarity: 0.78, minRms: 0.0015 });
   stabilizePitch(reading);
 }
 
@@ -868,22 +868,32 @@ async function startTuner() {
     return;
   }
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false },
-      video: false,
-    });
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) throw new Error('Este navegador no incluye Web Audio API.');
+    // Arranca el contexto dentro del gesto del usuario; algunos móviles bloquean
+    // AudioContext si se crea después del cuadro de permiso del micrófono.
+    tunerContext = new AudioContextClass();
+    const contextReady = tunerContext.state === 'suspended' ? tunerContext.resume() : Promise.resolve();
+    let stream;
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({
+        audio: {
+          echoCancellation: { ideal: false },
+          noiseSuppression: { ideal: false },
+          autoGainControl: { ideal: false },
+        },
+        video: false,
+      });
+    } catch (error) {
+      if (error?.name !== 'OverconstrainedError' && error?.name !== 'ConstraintNotSatisfiedError') throw error;
+      stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    }
     if (session !== tunerSession || activeView !== 'tuner') {
       stream.getTracks().forEach((track) => track.stop());
       return;
     }
-    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-    if (!AudioContextClass) {
-      stream.getTracks().forEach((track) => track.stop());
-      throw new Error('Este navegador no incluye Web Audio API.');
-    }
     tunerStream = stream;
-    tunerContext = new AudioContextClass();
-    if (tunerContext.state === 'suspended') await tunerContext.resume();
+    await contextReady;
     tunerSource = tunerContext.createMediaStreamSource(stream);
     tunerHighpass = tunerContext.createBiquadFilter();
     tunerHighpass.type = 'highpass';
@@ -897,7 +907,9 @@ async function startTuner() {
     tunerAnalyser.fftSize = 8192;
     tunerAnalyser.smoothingTimeConstant = 0;
     tunerRawSamples = new Float32Array(tunerAnalyser.fftSize);
-    tunerSamples = new Float32Array(tunerAnalyser.fftSize / 2);
+    // Keep the buffers the same size: set() throws if the 8192-sample analyser
+    // buffer is copied into a smaller destination.
+    tunerSamples = new Float32Array(tunerAnalyser.fftSize);
     tunerSource.connect(tunerHighpass).connect(tunerLowpass).connect(tunerAnalyser);
     recentFrequencies = [];
     stableFrequency = 0;
