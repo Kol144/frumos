@@ -119,6 +119,29 @@ test('YIN encuentra la fundamental aunque un armónico sea mucho más intenso', 
   assert.ok(reading.clarity >= 0.78);
 });
 
+test('YIN conserva la precisión de cuerdas graves con armónicos y ruido de fondo', () => {
+  for (const note of ['A1', 'E2', 'A2', 'E4']) {
+    const expectedFrequency = frequencyForMidi(midiForNote(note));
+    const rate = 24000;
+    const samples = new Float32Array(4096);
+    let seed = 12345;
+    for (let index = 0; index < samples.length; index++) {
+      const phase = (2 * Math.PI * expectedFrequency * index) / rate;
+      seed = (seed * 16807) % 2147483647;
+      const noise = ((seed / 2147483647) * 2 - 1) * 0.015;
+      samples[index] = 0.16 * Math.sin(phase) + 0.45 * Math.sin(2 * phase) + 0.08 * Math.sin(3 * phase) + noise;
+    }
+    const reading = detectPitchYin(samples, rate, {
+      minFrequency: expectedFrequency * 0.68,
+      maxFrequency: expectedFrequency * 1.65,
+      minRms: 0.0015,
+      analysisSize: samples.length,
+    });
+    assert.ok(reading, 'sin lectura para ' + note);
+    assert.ok(Math.abs(centsBetween(reading.frequency, expectedFrequency)) < 2, 'desviación para ' + note);
+  }
+});
+
 test('YIN descarta silencio y ruido sin periodicidad fiable', () => {
   assert.equal(detectPitchYin(new Float32Array(4096), 22050), null);
   let seed = 739391;

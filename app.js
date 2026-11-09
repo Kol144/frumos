@@ -847,8 +847,12 @@ function processTunerFrame() {
   if (now - lastAnalysisAt < 85) return;
   lastAnalysisAt = now;
   tunerAnalyser.getFloatTimeDomainData(tunerRawSamples);
-  tunerSamples.set(tunerRawSamples);
-  const sampleRate = tunerContext.sampleRate;
+  // Average adjacent audio frames to decimate by 2. This keeps an 8192-frame
+  // capture window for low guitar notes while halving YIN's processing cost.
+  for (let i = 0; i < tunerSamples.length; i++) {
+    tunerSamples[i] = (tunerRawSamples[i * 2] + tunerRawSamples[i * 2 + 1]) * 0.5;
+  }
+  const sampleRate = tunerContext.sampleRate / 2;
   const range = getAnalysisRange(sampleRate);
   const reading = detectPitchYin(tunerSamples, sampleRate, { ...range, analysisSize: 4096, threshold: 0.14, minClarity: 0.78, minRms: 0.0015 });
   stabilizePitch(reading);
@@ -907,9 +911,7 @@ async function startTuner() {
     tunerAnalyser.fftSize = 8192;
     tunerAnalyser.smoothingTimeConstant = 0;
     tunerRawSamples = new Float32Array(tunerAnalyser.fftSize);
-    // Keep the buffers the same size: set() throws if the 8192-sample analyser
-    // buffer is copied into a smaller destination.
-    tunerSamples = new Float32Array(tunerAnalyser.fftSize);
+    tunerSamples = new Float32Array(tunerAnalyser.fftSize / 2);
     tunerSource.connect(tunerHighpass).connect(tunerLowpass).connect(tunerAnalyser);
     recentFrequencies = [];
     stableFrequency = 0;
@@ -1224,6 +1226,7 @@ if ('serviceWorker' in navigator && window.isSecureContext) navigator.serviceWor
   bindEvents();
   syncTuningSelector();
   db = await openDB();
+  if (navigator.storage?.persist) navigator.storage.persist().catch(() => {});
   const storedProjects = await dbAll();
   projects = storedProjects.map(cleanProject);
   if (!projects.length) projects.push(newProject('Mi primer proyecto'));

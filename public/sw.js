@@ -1,5 +1,5 @@
-const CACHE = 'sampler-shell-v5';
-const APP_FILES = ['./', './index.html', './manifest.webmanifest', './icons/sampler.svg'];
+const CACHE = 'frumos-space-shell-v6';
+const APP_FILES = ['./', './index.html', './manifest.webmanifest', './icons/frumos-space.png'];
 
 self.addEventListener('install', (event) => {
   event.waitUntil((async () => {

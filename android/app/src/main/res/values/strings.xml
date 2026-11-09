@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Frumos Space</string>
+    <string name="title_activity_main">Frumos Space</string>
+    <string name="package_name">com.frumos.space</string>
+    <string name="custom_url_scheme">com.frumos.space</string>
+</resources>
